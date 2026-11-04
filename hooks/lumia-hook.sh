@@ -20,7 +20,7 @@
 
 set -u
 
-PLUGIN_VERSION="0.2.0"
+PLUGIN_VERSION="0.2.1"
 LUMIA_ENV_FILE="${LUMIA_ENV_FILE:-${HOME:-/tmp}/.lumia/lumia.env}"
 
 HOOK_TYPE="${1:-}"
@@ -30,6 +30,11 @@ if [ -z "$POLICY_URL" ] && [ -r "$LUMIA_ENV_FILE" ]; then
   POLICY_URL="$(sed -n 's/^LUMIA_POLICY_URL=//p' "$LUMIA_ENV_FILE" | head -n 1 | tr -d '\r')"
 fi
 POLICY_URL="${POLICY_URL%/}"
+# A bare Lumen address (https://host:port, no path) means its /policy endpoint.
+case "$POLICY_URL" in
+  http://*/*|https://*/*) ;;
+  http://*|https://*) POLICY_URL="$POLICY_URL/policy" ;;
+esac
 TIMEOUT="${LUMIA_POLICY_TIMEOUT:-10}"
 FAIL_CLOSED="${LUMIA_FAIL_CLOSED:-0}"
 DEFAULT_REASON="Blocked by Lumia Security policy."
